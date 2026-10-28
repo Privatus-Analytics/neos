@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    services:
+      db:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: neos
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="healthcheck.sh --connect"
+          --health-interval=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: package
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: gd, intl, mbstring, pdo_mysql, zip
+          ini-values: memory_limit=2G
+          tools: composer:v2
+          coverage: none
+      - name: Set up a Neos 9 site with the package
+        run: |
+          composer create-project --no-interaction --no-progress neos/neos-base-distribution neos
+          cd neos
+          mkdir -p DistributionPackages
+          cp -r "$GITHUB_WORKSPACE/package" DistributionPackages/Privatus.NeosAnalytics
+          composer config repositories.privatus path "./DistributionPackages/*"
+          composer require --no-interaction --no-progress "privatus/neos-analytics:@dev"
+          cat > Configuration/Settings.yaml <<'YAML'
+          Neos:
+            Flow:
+              persistence:
+                backendOptions:
+                  driver: pdo_mysql
+                  host: 127.0.0.1
+                  dbname: neos
+                  user: root
+                  password: root
+                  charset: utf8mb4
+            Imagine:
+              driver: Gd
+          YAML
+          ./flow doctrine:migrate
+          ./flow cr:setup
+          ./flow site:importall --package-key Neos.Demo
+      - name: PHP syntax
+        working-directory: package
+        run: find Classes Tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Unit tests
+        working-directory: neos
+        run: bin/phpunit -c Build/BuildEssentials/PhpUnit/UnitTests.xml DistributionPackages/Privatus.NeosAnalytics/Tests/Unit
+      - name: The tag is in the page head once a site ID is set
+        working-directory: neos
+        run: |
+          ./flow server:run --host 127.0.0.1 --port 8081 > /tmp/server.log 2>&1 &
+          sleep 5
+          if curl -sf http://127.0.0.1:8081/ | grep -q '/js/pa.js'; then echo "Tag printed without a site ID"; exit 1; fi
+          printf 'Privatus:\n  NeosAnalytics:\n    siteId: pa_CI123\n    modules: [engage, vitals]\n' >> Configuration/Settings.yaml
+          ./flow flow:cache:flush
+          curl -sf http://127.0.0.1:8081/ > page.html
+          grep -o '<script[^>]*pa.js[^>]*></script>' page.html
+          grep -q '<script defer src="https://privatusstats.com/js/pa.js" data-site="pa_CI123" data-modules="engage,vitals"></script>' page.html
+          sed 's#</head>.*##' page.html | grep -q 'data-site="pa_CI123"'

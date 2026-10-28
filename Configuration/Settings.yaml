@@ -1,0 +1,44 @@
+Privatus:
+  NeosAnalytics:
+    # Your site ID from the Privatus Analytics dashboard. It starts with pa_.
+    # A site ID set on the site node in the inspector wins over this one.
+    siteId: ''
+
+    # Set this to false to print no script, for example in
+    # Configuration/Development/Settings.yaml.
+    enabled: true
+
+    # Extra things to measure. Pick any of:
+    #   engage  time on page and scroll depth
+    #   auto    outbound links, downloads, forms and 404 pages
+    #   vitals  Web Vitals (how fast pages load and react)
+    #   clicks  click maps
+    #   ask     on-site surveys
+    # An empty list turns them all off.
+    modules:
+      - engage
+
+    # Paths that are never counted. A star matches anything, for example /private/*
+    excludedPaths: []
+
+    # Only count visits on these host names, for example [example.com, www.example.com].
+    # An empty list counts every host.
+    domains: []
+
+    # How page changes without a full reload are found: auto, history, hash or off.
+    spa: auto
+
+    # true turns off the automatic page view. You then call privatus.pageview() yourself.
+    manual: false
+
+    # The address that serves /js/pa.js. Keep the default unless you host your own copy.
+    scriptHost: 'https://privatusstats.com'
+
+Neos:
+  Fusion:
+    defaultContext:
+      'Privatus.Analytics': 'Privatus\NeosAnalytics\Eel\PrivatusAnalyticsHelper'
+  Neos:
+    fusion:
+      autoInclude:
+        'Privatus.NeosAnalytics': true

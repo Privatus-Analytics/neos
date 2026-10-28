@@ -1,0 +1,58 @@
+# Add this mixin to your site node type to set the site ID and modules in the
+# inspector. See the README.
+'Privatus.NeosAnalytics:Mixin.SiteSettings':
+  abstract: true
+  ui:
+    inspector:
+      groups:
+        privatusAnalytics:
+          label: 'Privatus Analytics'
+          icon: 'chart-line'
+          tab: meta
+          position: end
+  properties:
+    privatusAnalyticsSiteId:
+      type: string
+      search:
+        indexing: false
+      ui:
+        label: 'Site ID'
+        reloadIfChanged: false
+        help:
+          message: 'Your site ID from the Privatus Analytics dashboard. It starts with pa_. Leave it empty to use the site ID in Settings.yaml.'
+        inspector:
+          group: privatusAnalytics
+          position: 10
+          editorOptions:
+            placeholder: 'pa_...'
+      validation:
+        'Neos.Neos/Validation/RegularExpressionValidator':
+          regularExpression: '/^(pa_[A-Za-z0-9]+)?$/'
+    privatusAnalyticsModules:
+      type: array
+      search:
+        indexing: false
+      ui:
+        label: 'Modules'
+        reloadIfChanged: false
+        help:
+          message: 'Extra things to measure. Leave it empty to use the modules in Settings.yaml.'
+        inspector:
+          group: privatusAnalytics
+          position: 20
+          editor: 'Neos.Neos/Inspector/Editors/SelectBoxEditor'
+          editorOptions:
+            multiple: true
+            allowEmpty: true
+            placeholder: 'Use Settings.yaml'
+            values:
+              engage:
+                label: 'Time on page and scroll depth'
+              auto:
+                label: 'Outbound links, downloads, forms and 404 pages'
+              vitals:
+                label: 'Web Vitals'
+              clicks:
+                label: 'Click maps'
+              ask:
+                label: 'On-site surveys'

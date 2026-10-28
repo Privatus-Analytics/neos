@@ -1,0 +1,51 @@
+{
+    "name": "privatus/neos-analytics",
+    "type": "neos-package",
+    "description": "Adds the cookieless Privatus Analytics tracking script to your Neos site. No cookies, no cookie pop-up, no bots.",
+    "keywords": [
+        "neos",
+        "flow",
+        "fusion",
+        "neos-package",
+        "neos-plugin",
+        "analytics",
+        "privacy",
+        "cookieless",
+        "gdpr",
+        "web-analytics",
+        "privatus-analytics"
+    ],
+    "homepage": "https://privatusanalytics.com/docs",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Two Phase LLC",
+            "homepage": "https://privatusanalytics.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/Privatus-Analytics/neos/issues",
+        "source": "https://github.com/Privatus-Analytics/neos",
+        "docs": "https://privatusanalytics.com/docs"
+    },
+    "require": {
+        "php": ">=8.2",
+        "neos/neos": "^9.0",
+        "privatus/analytics": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Privatus\\NeosAnalytics\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Privatus\\NeosAnalytics\\Tests\\": "Tests/"
+        }
+    },
+    "extra": {
+        "neos": {
+            "package-key": "Privatus.NeosAnalytics"
+        }
+    }
+}

@@ -1,0 +1,28 @@
+# The Privatus Analytics script tag. It prints nothing without a valid site ID,
+# and nothing in the Neos backend, so your own editing is not counted.
+prototype(Privatus.NeosAnalytics:TrackingTag) < prototype(Neos.Fusion:Component) {
+    settings = ${Configuration.setting('Privatus.NeosAnalytics')}
+    siteId = ${q(site).property('privatusAnalyticsSiteId')}
+    modules = ${q(site).property('privatusAnalyticsModules')}
+
+    @if.notInBackend = ${!renderingMode.isEdit && !renderingMode.isPreview}
+
+    renderer = ${Privatus.Analytics.tag(props.settings, props.siteId, props.modules)}
+
+    @cache {
+        mode = 'cached'
+        entryIdentifier {
+            site = ${Neos.Caching.entryIdentifierForNode(site)}
+            renderingMode = ${renderingMode.name}
+        }
+        entryTags {
+            1 = ${Neos.Caching.nodeTag(site)}
+        }
+    }
+}
+
+prototype(Neos.Neos:Page) {
+    head.privatusAnalytics = Privatus.NeosAnalytics:TrackingTag {
+        @position = 'end 100'
+    }
+}
